@@ -13,16 +13,24 @@
 		<a href="${base}/user/logout">登出</a>
 	</div>
 	<div>
-		<table>
-			<thead>
-				<tr>
-					<td>id</td>
-					<td>用户名</td>
-					<td>创建日期</td>
-					<td>操作</td>
-				</tr>
-			</thead>
-			<tbody></tbody>
+		<%--<table id="table-User">--%>
+			<%--<thead>--%>
+				<%--<tr>--%>
+					<%--<td>id</td>--%>
+					<%--<td>用户名</td>--%>
+					<%--<td>创建日期</td>--%>
+					<%--<td>操作</td>--%>
+				<%--</tr>--%>
+			<%--</thead>--%>
+			<%--<tbody>--%>
+
+			<%--</tbody>--%>
+		<%--</table>--%>
+		<table id="tb1" border="2">
+			<th>id</th>
+			<th>用户名</th>
+			<th>创建日期</th>
+			<th>操作</th>
 		</table>
 	</div>
 	<div>
@@ -35,6 +43,28 @@
 <script type="text/javascript" src="https://cdn.staticfile.org/twitter-bootstrap/3.3.6/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="https://cdn.staticfile.org/layer/2.3/layer.js"></script>
 <script type="text/javascript">
-
+    $(function(){
+        //这里就是放页面加载的时候执行的函数。
+		alert("登陆成功");
+        $.ajax({
+            url : "${base}/user/list",
+            method : "GET",
+            dataType : "json",
+            success : function(resp) {
+                // if (resp) {
+					// alert("读取list");
+                // }
+                // $('#tb1').append('<tr><td>' + )
+                // $('#tb1').html('');
+				for (var i in resp.list) {
+				    var d = resp.list[i];
+				    $('#tb1').append('<tr><td>' + d.id + '</td><td>' + d.name + '</td><td>' + d.age + '</td><td>' + d.createTime + '</td></tr>')
+                }
+            },
+			error : function (resp) {
+				alert("读取List失败");
+            }
+        });
+    })
 </script>
 </html>

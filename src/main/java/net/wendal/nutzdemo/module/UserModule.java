@@ -10,6 +10,7 @@ import org.nutz.dao.QueryResult;
 import org.nutz.dao.pager.Pager;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
+import org.nutz.json.ToJson;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
 import org.nutz.lang.util.NutMap;
@@ -100,6 +101,16 @@ public class UserModule {
         pager.setRecordCount(dao.count(User.class));
         QueryResult qr = new QueryResult(users, pager);
         return qr;
+    }
+
+    @At
+    public String listJson(@Param("..") Pager pager) {
+        List<User> users = dao.query(User.class, null, pager);
+        pager.setRecordCount(dao.count(User.class));
+        QueryResult qr = new QueryResult(users, pager);
+        String result = "";
+//        ToJson toJson = new
+        return result;
     }
 
     @POST
