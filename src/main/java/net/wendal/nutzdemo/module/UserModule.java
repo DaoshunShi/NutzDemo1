@@ -13,6 +13,7 @@ import org.nutz.ioc.loader.annotation.IocBean;
 import org.nutz.json.ToJson;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
+import org.nutz.lang.random.R;
 import org.nutz.lang.util.NutMap;
 import org.nutz.log.Log;
 import org.nutz.log.Logs;
@@ -103,16 +104,6 @@ public class UserModule {
         return qr;
     }
 
-    @At
-    public String listJson(@Param("..") Pager pager) {
-        List<User> users = dao.query(User.class, null, pager);
-        pager.setRecordCount(dao.count(User.class));
-        QueryResult qr = new QueryResult(users, pager);
-        String result = "";
-//        ToJson toJson = new
-        return result;
-    }
-
     @POST
     @At
     public NutMap add(@Param("..") User user) {
@@ -121,6 +112,12 @@ public class UserModule {
             return re.setv("msg", "名字不能是空");
         if (Strings.isBlank(user.getPassword()))
             return re.setv("msg", "密码不能是空");
+
+//        user.setName(user.getName());
+        user.setAge(user.getAge());
+        user.setSalt(R.UU32());
+        user.setPassword(Lang.digest("SHA-256", user.getSalt() + user.getPassword()));
+
         dao.insert(user);
         return re.setv("ok", true);
     }
