@@ -1,16 +1,17 @@
 package net.wendal.nutzdemo.module;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.nutz.dao.Cnd;
 import org.nutz.dao.Dao;
 import org.nutz.dao.QueryResult;
 import org.nutz.dao.pager.Pager;
 import org.nutz.ioc.loader.annotation.Inject;
 import org.nutz.ioc.loader.annotation.IocBean;
-import org.nutz.json.ToJson;
 import org.nutz.lang.Lang;
 import org.nutz.lang.Strings;
 import org.nutz.lang.random.R;
@@ -104,30 +105,65 @@ public class UserModule {
         return qr;
     }
 
+//    @POST
+//    @At
+//    public NutMap add(@Param("..") User user) {
+//        NutMap re = new NutMap("ok", false);
+//        if (Strings.isBlank(user.getName()))
+//            return re.setv("msg", "名字不能是空");
+//        if (Strings.isBlank(user.getPassword()))
+//            return re.setv("msg", "密码不能是空");
+//
+//        user.setName(user.getName());
+//        user.setAge(user.getAge());
+//        user.setSalt(R.UU32());
+//        user.setPassword(Lang.digest("SHA-256", user.getSalt() + user.getPassword()));
+//
+//        dao.insert(user);
+//        return re.setv("ok", true);
+//    }
+
     @POST
     @At
     public NutMap add(@Param("..") User user) {
         NutMap re = new NutMap("ok", false);
-        if (Strings.isBlank(user.getName()))
-            return re.setv("msg", "名字不能是空");
-        if (Strings.isBlank(user.getPassword()))
-            return re.setv("msg", "密码不能是空");
 
-//        user.setName(user.getName());
-        user.setAge(user.getAge());
+        String msg = checkUser(user, true);
+        if (msg != null){
+            return re.setv("ok", false).setv("msg", msg);
+        }
         user.setSalt(R.UU32());
         user.setPassword(Lang.digest("SHA-256", user.getSalt() + user.getPassword()));
 
         dao.insert(user);
-        return re.setv("ok", true);
+        return re.setv("ok", true).setv("data", user);
     }
+
+//    @POST
+//    @At
+//    public NutMap update(@Param("..") User user) {
+//        if (user.getId() > 0)
+//            dao.update(user, "age");
+//        return new NutMap("ok", user.getId() > 0);
+//    }
 
     @POST
     @At
-    public NutMap update(@Param("..") User user) {
-        if (user.getId() > 0)
-            dao.update(user, "age");
-        return new NutMap("ok", user.getId() > 0);
+    public NutMap update(@Param("..")User user) {
+        NutMap re = new NutMap();
+        if (!Strings.isBlank(user.getName())) {
+            return re.setv("ok", false).setv("msg", "用户名不存在");
+        }
+        User user2 = dao.fetch(User.class, user.getName()); // 根据用户名获取id
+        user.setId(user2.getId());
+        String msg = checkUser(user, false);
+        if (msg != null){
+            return re.setv("ok", false).setv("msg", msg);
+        }
+        user.setName(null);// 不允许更新用户名
+        user.setCreateTime(null);//也不允许更新创建时间
+        dao.updateIgnoreNull(user);// 真正更新的其实只有password和age
+        return re.setv("ok", true);
     }
 
     @DELETE
@@ -136,5 +172,42 @@ public class UserModule {
         if (userId == 1)
             return new NutMap("ok", false);
         return new NutMap("ok", dao.delete(User.class, userId) == 1);
+    }
+
+    /**
+     * 添加用户校验方法
+     * @param user
+     * @param create
+     * @return
+     */
+    protected String checkUser(User user, boolean create) {
+        if (user == null) {
+            return "空对象";
+        }
+        if (create) {
+            if (Strings.isBlank(user.getName()) || Strings.isBlank(user.getPassword()))
+                return "用户名/密码不能为空";
+        } else {
+            if (Strings.isBlank(user.getPassword()))
+                return "密码不能为空";
+        }
+        String passwd = user.getPassword().trim();
+        if (6 > passwd.length() || passwd.length() > 12) {
+            return "密码长度错误";
+        }
+        user.setPassword(passwd);
+        if (create) {
+            int count = dao.count(User.class, Cnd.where("name", "=", user.getName()));
+            if (count != 0) {
+                return "用户名已经存在";
+            }
+        } else {
+            if (user.getId() < 1) {
+                return "用户Id非法";
+            }
+        }
+        if (user.getName() != null)
+            user.setName(user.getName().trim());
+        return null;
     }
 }

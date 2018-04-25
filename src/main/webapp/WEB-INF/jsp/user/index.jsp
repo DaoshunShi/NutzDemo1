@@ -60,6 +60,15 @@
 					<div class="show">
 						<button class="btn btn-primary btn-lg btn-block" type="submit" id="add_button" data-loading-text="添加">添加</button>
 					</div>
+					<p id="tip2" class="bg-danger p15" style="display: none"></p>
+
+					<div class="show">
+						<button class="btn btn-primary btn-lg btn-block" type="submit" id="update_button" data-loading-text="更新">更新</button>
+					</div>
+					<p id="tip3" class="bg-danger p15" style="display: none"></p>
+					<div class="show">
+						<button class="btn btn-primary btn-lg btn-block" type="submit" id="delete_button" data-loading-text="删除">删除</button>
+					</div>
 				</form>
 			</div>
 		</div>
@@ -78,7 +87,7 @@
     })
 
 	function getList() {
-        alert("登陆成功");
+        // alert("登陆成功");
         $.ajax({
             url : "${base}/user/list",
             method : "GET",
@@ -88,7 +97,7 @@
 				// $('#tb1').append
                 for (var i in resp.list) {
                     var d = resp.list[i];
-                    $('#tb1').append('<tr><td>' + d.id + '</td><td>' + d.name +  '</td><td>' + d.age + '</td><td>' + d.createTime + '</td><td>' + '修改' + '</td><td>' + '删除' + '</td></tr>')
+                    $('#tb1').append('<tr><td>' + d.id + '</td><td>' + d.name +  '</td><td>' + d.age + '</td><td>' + d.createTime + '</td><td>' + '修改' + '</td><td>' + '删除' + '</td></tr>');
                 }
             }
         });
@@ -96,25 +105,46 @@
 
 
     $("#add_button").click(function() {
-        alert("添加用户");
+        // alert("添加用户");
         $.ajax({
             url : "${base}/user/add",
             data : $("#add_form").serialize(),
             method : "POST",
             dataType : "json",
             success : function(resp) {
-                var res = resp;
+                // var res = resp;
 
-                alert("添加成功");
+                // alert("添加成功");
                 if (resp.ok) {
-                    alert("true");
-                    getList();
+                    // alert("true");
+                    // getList();
+					var d = resp.data;
+					$('#tb1').append('<tr><td>' + d.id + '</td><td>' + d.name +  '</td><td>' + d.age + '</td><td>' + d.createTime + '</td><td>' + '修改' + '</td><td>' + '删除' + '</td></tr>');
+					alert('添加成功');
                 } else {
-                    alert('false' + resp.msg);
+                    alert('false ' + resp.msg);
                 }
             }
         });
         return false;
+	});
+
+    $("#update_button").click(function() {
+		$.ajax({
+			url : "${base}/user/update",
+			data : $("#add_form").serialize(),
+			method : "POST",
+			dataType : "json",
+			success : function(resp) {
+			    if (resp.ok) {
+			        getList();
+			        alert('修改成功');
+                } else {
+			        alert('fasle ' + resp.msg);
+                }
+            }
+		});
+		return false;
 	});
 
 </script>
